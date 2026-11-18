@@ -126,3 +126,27 @@ def test_todo_valid_link(app: SphinxTestApp) -> None:
 
     # If everything is correct we should have exactly one target.
     assert len(matched) == 1
+
+
+@pytest.mark.sphinx(
+    'html',
+    testroot='ext-todo-nested-admonition',
+    freshenv=True,
+    confoverrides={'todo_include_todos': True},
+)
+def test_todolist_nested_admonition_title(app: SphinxTestApp) -> None:
+    """The title of an admonition nested in a todo must not be duplicated
+    in the todolist when the todo's page is written before the todolist's.
+    https://github.com/sphinx-doc/sphinx/issues/14623
+    """
+    app.build(force_all=True)
+
+    danger_title = '<p class="admonition-title">Danger</p>'
+
+    # the original todo (foo.html is written before index.html)
+    content = (app.outdir / 'foo.html').read_text(encoding='utf8')
+    assert content.count(danger_title) == 1
+
+    # the copy of the todo in the todolist
+    content = (app.outdir / 'index.html').read_text(encoding='utf8')
+    assert content.count(danger_title) == 1

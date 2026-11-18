@@ -87,7 +87,8 @@ class TodoDomain(Domain):
         todos = self.todos.setdefault(docname, [])
         for todo in document.findall(todo_node):
             env.events.emit('todo-defined', todo)
-            todos.append(todo)
+            # keep a copy: the writer may modify the doctree before todolists use it
+            todos.append(todo.deepcopy())
 
             if env.config.todo_emit_warnings:
                 logger.warning(
